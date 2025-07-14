@@ -1,0 +1,4 @@
+#IMPORTANT QUESTIONS :- 
+1.why use react:- 1. it will boost speed of development
+2.why use hook :- using it we can access state management functionality provided by react
+3.to stop event bubbeling use e.stop.propagation  
