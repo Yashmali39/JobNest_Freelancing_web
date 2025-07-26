@@ -1,7 +1,11 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from './AuthContext';
+import { FaUserCircle } from 'react-icons/fa';
 
 const Navbar = () => {
+  const { isLoggedIn, user } = useAuth();
+  console.log(isLoggedIn);
   const navLinkStyles = ({ isActive }) =>
     isActive
       ? "text-blue-600 font-bold"
@@ -22,12 +26,41 @@ const Navbar = () => {
             Find Freelancer
           </NavLink>
         </nav>
-        <NavLink
-          to="/postproject"
-          className="hidden md:inline-block bg-blue-600 text-white px-4 py-2 rounded-xl shadow hover:bg-blue-700"
-        >
-          Post a project
-        </NavLink>
+
+        <div className='flex gap-3 items-center'>
+          <NavLink
+            to="/postproject"
+            className="hidden md:inline-block bg-blue-600 text-white px-4 py-2 rounded-xl shadow hover:bg-blue-700"
+          >
+            Post a project
+          </NavLink>
+          {isLoggedIn && user ? (
+            <>
+              {(user.role === "freelancer" &&
+                <NavLink to={`/freelancerprofile/${user.freelancerId}`} className={navLinkStyles}>
+                  <FaUserCircle className='size-9' />
+
+                </NavLink>
+
+              )}
+              {(user.role === "client" &&
+                <NavLink to={`/clientprofile/${user.clientId}`} className={navLinkStyles}>
+                  <FaUserCircle className='size-9' />
+
+                </NavLink>
+
+              )}
+              <NavLink to="/logout" className="text-gray-600 hover:text-blue-600">Logout</NavLink>
+            </>
+          ) : (
+            <>
+              {/* <NavLink to="/login">Login</NavLink>
+          <NavLink to="/signin">Sign Up</NavLink> */}
+            </>
+          )}
+        </div>
+
+
         {/* Mobile Menu Toggle */}
         <div className="md:hidden">
           <button

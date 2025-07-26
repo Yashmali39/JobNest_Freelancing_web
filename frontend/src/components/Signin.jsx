@@ -1,10 +1,12 @@
 import React from 'react'
 import { useNavigate } from "react-router-dom";
 import { useForm } from 'react-hook-form'
-import { redirect } from 'react-router-dom'
+import { useAuth } from './AuthContext';
+
+
 const Signin = () => {
-  
-  
+
+  const {setIsLoggedIn, setUser} = useAuth();
   const navigate = useNavigate();
   const {
     register,
@@ -15,7 +17,7 @@ const Signin = () => {
 
   const onSubmit = async (data) => {
     console.log(data)
-    
+
     try {
 
       const response = await fetch(`http://localhost:3000/users/create`, {
@@ -32,11 +34,14 @@ const Signin = () => {
         console.log("User created:", result);
         alert("User created successfully!");
         reset(); // clear form
-      if (result.user.role === "freelancer") {
-        navigate(`/freelancerform/${result.user._id}`);
-      } else {
-        console.log("client")
-      }
+        setIsLoggedIn(true);
+        setUser(result.user);
+        if (result.user.role === "freelancer") {
+          navigate(`/freelancerform/${result.user._id}`);
+        } else {
+          navigate(`/clientprofile/${result.user.clientId}`);//there is problem try to solve it 
+          console.log("client")
+        }
       } else {
         console.error("Failed to create user");
       }
@@ -54,31 +59,31 @@ const Signin = () => {
         </div>
         <div className='flex gap-[20px]'>
           <div>
-          <input
-            type="patextssword"
-            className='p-1 lg:w-[235px] border border-slate-300 rounded-xl'
-            placeholder="First Name"
-            {...register("first_name", {
-              required: "first_name is required",
-              minLength: { value: 4, message: 'Minimum length is 4' },
-              maxLength: { value: 10, message: 'Maximum length is 10' }
-            })}
-          />
-          {errors.password && <p className='text-red-600'>{errors.password.message}</p>}
-        </div>
+            <input
+              type="patextssword"
+              className='p-1 lg:w-[235px] border border-slate-300 rounded-xl'
+              placeholder="First Name"
+              {...register("firstName", {
+                required: "firstName is required",
+                minLength: { value: 4, message: 'Minimum length is 4' },
+                maxLength: { value: 10, message: 'Maximum length is 10' }
+              })}
+            />
+            {errors.firstName && <p className='text-red-600'>{errors.firstName.message}</p>}
+          </div>
           <div>
-          <input
-            type="text"
-            className='p-1 lg:w-[235px] border border-slate-300 rounded-xl'
-            placeholder="Last Name"
-            {...register("last_name", {
-              required: "last_name is required",
-              minLength: { value: 4, message: 'Minimum length is 4' },
-              maxLength: { value: 10, message: 'Maximum length is 10' }
-            })}
-          />
-          {errors.password && <p className='text-red-600'>{errors.password.message}</p>}
-        </div>
+            <input
+              type="text"
+              className='p-1 lg:w-[235px] border border-slate-300 rounded-xl'
+              placeholder="Last Name"
+              {...register("lastName", {
+                required: "lastName is required",
+                minLength: { value: 4, message: 'Minimum length is 4' },
+                maxLength: { value: 10, message: 'Maximum length is 10' }
+              })}
+            />
+            {errors.lastName && <p className='text-red-600'>{errors.lastName.message}</p>}
+          </div>
         </div>
         <div>
           <input

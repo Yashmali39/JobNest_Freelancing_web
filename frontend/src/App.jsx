@@ -11,93 +11,132 @@ import Navbar from './components/Navbar'
 import Postproject from './components/Postproject'
 import FreelancerForm from './components/FreelancerForm'
 import FreelancerProfile from './components/FreelancerProfile'
-const router = createBrowserRouter(
-  [
+import {AuthProvider} from './components/AuthContext';
+import ClientProfile from './components/ClientProfile'
+import CreateJob from './components/CreateJob'
+function App() {
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    // Fetch user on app load
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('http://localhost:3000/users/api/me', {
+          credentials: 'include' // <--- important for cookies!
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        console.log(err);
+        setUser(null);
+      }
+    }
+
+    checkAuth();
+  }, []);
+
+  const router = createBrowserRouter([
     {
       path: "/",
-      element :
-      <div>
-        <Navbar/>
-        <Home/>
-      </div>
-
+      element:
+        <div>
+          <Navbar user={user} />
+          <Home user={user} />
+        </div>
     },
     {
       path: "/findwork",
-      element :
-      <div>
-        <Navbar/>
-        <Findwork/>
-      </div>
-
+      element:
+        <div>
+          <Navbar user={user} />
+          <Findwork />
+        </div>
     },
     {
       path: "/findfreelancers",
-      element :
-      <div>
-        <Navbar/>
-        <Findfreelancers/>
-      </div>
+      element:
+        <div>
+          <Navbar user={user} />
+          <Findfreelancers />
+        </div>
     },
     {
       path: "/login",
-      element :
-      <div>
-        <Navbar/>
-        <Login/>
-      </div>
+      element:
+        <div>
+          <Navbar user={user} />
+          <Login />
+        </div>
     },
     {
       path: "/logout",
-      element :
-      <div>
-        <Navbar/>
-        <Logout/>
-      </div>
+      element:
+        <div>
+          <Navbar user={user} />
+          <Logout />
+        </div>
     },
     {
       path: "/signin",
-      element :
-      <div>
-        <Navbar/>
-        <Signin/>
-      </div>
+      element:
+        <div>
+          <Navbar user={user} />
+          <Signin />
+        </div>
     },
-   {
+    {
       path: "/freelancerform/:id",
-      element :
-      <div>
-        <Navbar/>
-        <FreelancerForm/>
-      </div>
+      element:
+        <div>
+          <Navbar user={user} />
+          <FreelancerForm />
+        </div>
     },
     {
       path: "/freelancerprofile/:id",
-      element :
-      <div>
-        <Navbar/>
-        <FreelancerProfile/>
-      </div>
+      element:
+        <div>
+          <Navbar user={user} />
+          <FreelancerProfile />
+        </div>
     },
     {
       path: "/postproject",
-      element :
-      <div>
-        <Navbar/>
-        <Postproject/>
-      </div>
+      element:
+        <div>
+          <Navbar user={user} />
+          <Postproject />
+        </div>
     },
-  ]
-)
+    {
+      path: "/clientprofile/:id",
+      element:
+        <div>
+          <Navbar user={user} />
+          <ClientProfile />
+        </div>
+    },
+    {
+      path: "/createjob/:id",
+      element:
+        <div>
+          <Navbar user={user} />
+          <CreateJob />
+        </div>
+    },
+  ])
 
-function App() {
-  
   return (
     <>
-    <div>
-    <RouterProvider router={router}/>
-    </div>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
     </>
   )
 }
+
 export default App

@@ -5,6 +5,10 @@ const router = express.Router();
 const { createUser, loginUser, logout } = require('../controllers/authControllers');
 const freelancerRouter = require('./freelancerRouter');
 const freelancerModel = require('../models/freelancer-model');
+const isloggedin = require('../middlewares/isLoggedin');
+const isLoggedin = require('../middlewares/isLoggedin');
+
+
 router.get("/", (req, res) => {
     res.send("Hi User");
 })
@@ -43,7 +47,7 @@ router.post('/freelancer/create/:id', async (req, res) => {
             userid: req.params.id
         })
         let user = await userModel.findOne({_id: req.params.id});
-        user.freelancerid = freelancer._id;
+        user.freelancerId = freelancer._id;
         await user.save();
         res.status(201).json({
             message: "Freelancer Created",
@@ -68,6 +72,10 @@ router.post('/freelancer/create/:id', async (req, res) => {
     }
 })
 
-router.get('/logout', logout);
+router.get('/api/me', isloggedin, (req, res)=>{
+    res.json(req.user);
+})
+
+router.post('/logout', logout);
 
 module.exports = router;

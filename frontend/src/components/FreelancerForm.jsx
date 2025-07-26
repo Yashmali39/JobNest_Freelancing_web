@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { useAuth } from './AuthContext';
 
 
 const FreelancerForm = () => {
+  const {user} = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -52,7 +54,7 @@ const FreelancerForm = () => {
       const payload = {
         ...data,
         skills: data.skills.split(',').map(s => s.trim()),
-        userid: 'USER_ID_FROM_CONTEXT' // Replace this with actual user ID
+        userid: `${user._id}`
       };
       const response = await fetch(`http://localhost:3000/users/freelancer/create/${id}`, {
         method: 'POST',

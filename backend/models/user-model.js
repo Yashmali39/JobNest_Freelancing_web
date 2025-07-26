@@ -1,17 +1,17 @@
 const mongoose = require('mongoose');
 
 const userSchema = mongoose.Schema({
-    first_name: String,
-    last_name: String,
+    firstName: String,
+    lastName: String,
     email: String,
     password: String,
     role: String,
     
-    freelancerid: {
+    freelancerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'freelancer',
      },
-    clientid: {
+    clientId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'client',
      }

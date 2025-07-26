@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from 'react-hook-form'
 import { redirect } from 'react-router-dom'
 import { NavLink } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 const Login = () => {
 
-
+  const {setIsLoggedIn, setUser} = useAuth();
   const navigate = useNavigate();
   const {
     register,
@@ -30,16 +31,23 @@ const Login = () => {
 
       if (response.ok) {
         const result = await response.json();
-        console.log("User loggedin:", result);
-        alert("User Loggedin successfully!");
-        reset(); // clear form
-        if (result.user.role === "freelancer") {
-        navigate(`/freelancerprofile/${result.user.freelancerid}`);
-        } else {
-          console.log("client")
+        if(result.islogin){
+          setIsLoggedIn(true);
+          setUser(result.user);
+          console.log("User loggedin:", result);
+          alert("User Loggedin successfully!");
+          reset(); // clear form
+          if (result.user.role === "freelancer") {
+          navigate(`/freelancerprofile/${result.user.freelancerId}`);
+          } else {
+            navigate(`/clientprofile/${result.user.clientId}`);
+            console.log("client")
+          }
+        }else{
+          alert("something Went Wrong!");
         }
       } else {
-        console.error("Failed to login user");
+        console.error(result.message);
       }
     } catch (error) {
       console.log(error.message)
