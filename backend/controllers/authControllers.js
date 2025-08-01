@@ -6,40 +6,47 @@ const { generateToken } = require('../utils/genereteToken')
 
 
 module.exports.createUser = async (req, res) => {
+  const isValidEmail = (email) => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+};
+
   let { firstName, lastName, email, password, role } = req.body;
   try {
-    let user = await userModel.findOne({ email });
-    if (user) {
-      return res.status(409).json({ message: "User already exists" });
-    }
+    if(isValidEmail(email)){
+      
+      let user = await userModel.findOne({ email });
+      if (user) {
+        return res.status(409).json({ message: "User already exists" });
+      }
 
-    const salt = await bcrypt.genSalt(10);
-    const hash = await bcrypt.hash(password, salt);
-
-    user = await userModel.create({
-      firstName,
-      lastName,
-      email,
-      role,
-      password: hash,
-    });
-    if(user.role === "client"){
-      let client = await clientModel.create({
-        userId: user._id
-      })
-      user.clientId = client._id
-      await user.save();
+      const salt = await bcrypt.genSalt(10);
+      const hash = await bcrypt.hash(password, salt);
+      user = await userModel.create({
+        firstName,
+        lastName,
+        email,
+        role,
+        password: hash,
+      });
+      if(user.role === "client"){
+        let client = await clientModel.create({
+          userId: user._id
+        })
+        user.clientId = client._id
+        await user.save();
+      }
+      const token = generateToken(user);
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'Lax',
+      });
+      return res.status(201).json({
+        message: "User Created",
+        user
+      });
     }
-    const token = generateToken(user);
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'Lax',
-    });
-    return res.status(201).json({
-      message: "User Created",
-      user
-    });
   } catch (error) {
     console.error(error.message);
     return res.status(500).json({ error: "Server error: " + error.message });

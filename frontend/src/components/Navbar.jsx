@@ -10,8 +10,10 @@ const Navbar = () => {
     isActive
       ? "text-blue-600 font-bold"
       : "text-gray-600 hover:text-blue-600";
+      
 
   return (
+    
     <header className="bg-slate-800 shadow-md sticky top-0 z-20">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         <h1 className="text-3xl font-bold text-blue-600">JobNest</h1>

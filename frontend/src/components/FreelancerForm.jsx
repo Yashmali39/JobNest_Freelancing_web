@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
-
 const FreelancerForm = () => {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const { register, handleSubmit, watch, formState: { errors }, getValues } = useForm({
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    getValues,
+    reset
+  } = useForm({
     mode: 'onTouched',
     defaultValues: {
-      // resume: '',
       profession: '',
       experience: '',
       education: '',
@@ -26,30 +30,15 @@ const FreelancerForm = () => {
   });
 
   const nextStep = () => {
-    // Example: Only go to next if current step fields are valid
-    if (step === 1) {
-      const { profession, experience } = getValues();
-      if (!profession || !experience) {
-        alert('Please fill all Step 1 fields');
-        return;
-      }
-    }
-    if (step === 2) {
-      const { education, language, skills } = getValues();
-      if (!education || !language || !skills) {
-        alert('Please fill all Step 2 fields');
-        return;
-      }
-    }
+    const values = getValues();
+    if (step === 1 && (!values.profession || !values.experience)) return alert('Fill all Step 1 fields');
+    if (step === 2 && (!values.education || !values.language || !values.skills)) return alert('Fill all Step 2 fields');
     setStep(prev => prev + 1);
   };
 
   const prevStep = () => setStep(prev => prev - 1);
 
   const onSubmit = async (data) => {
-    console.log('Final freelancer data:', data);
-    console.log(id);
-    // Example: Convert skills from CSV string to array
     try {
       const payload = {
         ...data,
@@ -59,100 +48,145 @@ const FreelancerForm = () => {
       const response = await fetch(`http://localhost:3000/users/freelancer/create/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Important for cookies!
+        credentials: 'include',
         body: JSON.stringify(payload)
-      })
+      });
 
       if (response.ok) {
         const result = await response.json();
-        console.log("Profile created:", result);
         alert("Profile created successfully!");
+        reset();
         navigate(`/freelancerprofile/${result.freelancer._id}`);
-        reset(); // clear form
-        if (result.user.role === "freelancer") {
-          navigate(`/freelancerform/${result.user._id}`);
-        } else {
-          console.log("client")
-        }
       }
-
     } catch (error) {
-
+      console.error("Form submission error:", error);
     }
-
   };
 
-  return (
-    <div className="min-h-screen flex justify-center items-center">
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 border p-4 w-[400px] shadow-md rounded-md">
+  const stepTitles = [
+    "Add your title & experience",
+    "Education, skills & language",
+    "Profile description & address"
+  ];
 
-        <h2 className="text-xl font-bold mb-2">Step {step} of 3</h2>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="bg-white rounded-xl shadow-lg p-10 w-full max-w-3xl border border-gray-200"
+      >
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-gray-800">Create Profile</h1>
+          <p className="text-base text-gray-500 mt-1">{stepTitles[step - 1]}</p>
+          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-6">
+            <div
+              className="bg-[#2e3a59] h-1.5 rounded-full"
+              style={{ width: `${(step / 3) * 100}%` }}
+            ></div>
+          </div>
+          <p className="mt-3 text-xs text-gray-400">Step {step} of 3</p>
+        </div>
 
         {step === 1 && (
           <>
+            <label className="block mb-5">
+              <input
+                {...register('profession', { required: true })}
+                className="w-full p-3 border rounded-md focus:outline-[#2e3a59]"
+                placeholder="e.g., Web Developer"
+              />
+              {errors.profession && <span className="text-red-500 text-sm">Profession is required</span>}
+            </label>
 
-            <div>
-              <input {...register('profession', { required: true })} placeholder="Profession" />
-              {errors.profession && <p className="text-red-500">Profession is required</p>}
-            </div>
-
-            <div>
-              <input {...register('experience', { required: true })} placeholder="Experience" />
-              {errors.experience && <p className="text-red-500">Experience is required</p>}
-            </div>
+            <label className="block mb-5">
+              <input
+                {...register('experience', { required: true })}
+                className="w-full p-3 border rounded-md focus:outline-[#2e3a59]"
+                placeholder="e.g., 2 years"
+              />
+              {errors.experience && <span className="text-red-500 text-sm">Experience is required</span>}
+            </label>
           </>
         )}
 
         {step === 2 && (
           <>
-            <div>
-              <input {...register('education', { required: true })} placeholder="Education" />
-              {errors.education && <p className="text-red-500">Education is required</p>}
-            </div>
+            <label className="block mb-5">
+              <input
+                {...register('education', { required: true })}
+                className="w-full p-3 border rounded-md focus:outline-[#2e3a59]"
+                placeholder="e.g., Bachelors in CS"
+              />
+              {errors.education && <span className="text-red-500 text-sm">Education is required</span>}
+            </label>
 
-            <div>
-              <input {...register('language', { required: true })} placeholder="Language" />
-              {errors.language && <p className="text-red-500">Language is required</p>}
-            </div>
+            <label className="block mb-5">
+              <input
+                {...register('language', { required: true })}
+                className="w-full p-3 border rounded-md focus:outline-[#2e3a59]"
+                placeholder="e.g., English, Hindi"
+              />
+              {errors.language && <span className="text-red-500 text-sm">Language is required</span>}
+            </label>
 
-            <div>
-              <input {...register('skills', { required: true })} placeholder="Skills (comma separated)" />
-              {errors.skills && <p className="text-red-500">Skills are required</p>}
-            </div>
+            <label className="block mb-5">
+              <input
+                {...register('skills', { required: true })}
+                className="w-full p-3 border rounded-md focus:outline-[#2e3a59]"
+                placeholder="e.g., React, Tailwind, Node"
+              />
+              {errors.skills && <span className="text-red-500 text-sm">Skills are required</span>}
+            </label>
           </>
         )}
 
         {step === 3 && (
           <>
-            <div>
-              <input {...register('description', { required: true })} placeholder="Description" />
-              {errors.description && <p className="text-red-500">Description is required</p>}
-            </div>
+            <label className="block mb-5">
+              <textarea
+                {...register('description', { required: true })}
+                className="w-full p-3 border rounded-md focus:outline-[#2e3a59]"
+                placeholder="Tell us about yourself..."
+              />
+              {errors.description && <span className="text-red-500 text-sm">Description is required</span>}
+            </label>
 
-            <div>
-              <input {...register('address', { required: true })} placeholder="Address" />
-              {errors.address && <p className="text-red-500">Address is required</p>}
-            </div>
+            <label className="block mb-5">
+              <input
+                {...register('address', { required: true })}
+                className="w-full p-3 border rounded-md focus:outline-[#2e3a59]"
+                placeholder="Address"
+              />
+              {errors.address && <span className="text-red-500 text-sm">Address is required</span>}
+            </label>
 
-            <div>
-              <input {...register('city', { required: true })} placeholder="City" />
-              {errors.city && <p className="text-red-500">City is required</p>}
-            </div>
+            <label className="block mb-5">
+              <input
+                {...register('city', { required: true })}
+                className="w-full p-3 border rounded-md focus:outline-[#2e3a59]"
+                placeholder="City"
+              />
+              {errors.city && <span className="text-red-500 text-sm">City is required</span>}
+            </label>
           </>
         )}
 
-        <div className="flex gap-2 mt-4">
+        <div className="flex justify-between mt-8">
           {step > 1 && (
-            <button type="button" onClick={prevStep} className="bg-gray-400 px-4 py-2 rounded">Back</button>
+            <button type="button" onClick={prevStep} className="px-6 py-2 bg-gray-200 rounded-md">
+              Back
+            </button>
           )}
-          {step < 3 && (
-            <button type="button" onClick={nextStep} className="bg-blue-500 text-white px-4 py-2 rounded">Next</button>
-          )}
-          {step === 3 && (
-            <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">Submit</button>
+          {step < 3 ? (
+            <button type="button" onClick={nextStep} className="px-6 py-2 bg-[#2e3a59] text-white rounded-md">
+              Next
+            </button>
+          ) : (
+            <button type="submit" className="px-6 py-2 bg-green-600 text-white rounded-md">
+              Submit
+            </button>
           )}
         </div>
-
       </form>
     </div>
   );
