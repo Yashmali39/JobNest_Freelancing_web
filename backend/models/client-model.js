@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const clientSchema = mongoose.Schema({
+    rating: String,
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user',

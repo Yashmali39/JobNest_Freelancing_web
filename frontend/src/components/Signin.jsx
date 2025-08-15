@@ -133,8 +133,7 @@ const Signin = () => {
           </div>
           {errors.role && <p className="text-red-500">Please select one</p>}
         </div>
-
-
+        
         <button type='submit' className='bg-blue-600 text-white px-4 py-2 rounded-xl shadow hover:bg-blue-700 lg:w-[500px]'>Create User</button>
       </form>
     </div>

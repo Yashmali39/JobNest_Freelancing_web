@@ -1,7 +1,6 @@
 import React from 'react'
 import { useNavigate } from "react-router-dom";
 import { useForm } from 'react-hook-form'
-import { redirect } from 'react-router-dom'
 import { NavLink } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 const Login = () => {

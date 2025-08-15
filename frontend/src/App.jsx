@@ -14,6 +14,8 @@ import FreelancerProfile from './components/FreelancerProfile'
 import {AuthProvider} from './components/AuthContext';
 import ClientProfile from './components/ClientProfile'
 import CreateJob from './components/CreateJob'
+import { div } from 'framer-motion/client'
+import JobCard from './components/JobCard'
 function App() {
   const [user, setUser] = useState(null)
 
@@ -128,6 +130,14 @@ function App() {
           <CreateJob />
         </div>
     },
+    {
+      path: "/job/:id",
+      element:
+      <div>
+        <Navbar/>
+        <JobCard/>
+      </div>
+    }
   ])
 
   return (

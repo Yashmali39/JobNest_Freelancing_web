@@ -1,14 +1,82 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from './AuthContext'
+import { data, useNavigate } from 'react-router-dom'
+import SavedJobs from './SavedJobs';
+import { FaSave } from 'react-icons/fa';
+import { div } from 'framer-motion/client';
 const FreelancerHome = () => {
+    const navigate = useNavigate();
     const { isLoggedIn, user } = useAuth();
     const [jobs, setJobs] = useState([]);
+    const [bestMatched, setBestMatched] = useState(true);
+    const [recent, setRecent] = useState(false);
+    const [saved, setSaved] = useState(false);
+    const [savedJobs, setSavedJobs] = useState();
+    const [isSaved, setIsSaved] = useState();
+
+    const handleBest = () => {
+        setBestMatched(true);
+        setRecent(false);
+        setSaved(false);
+    }
+
+    const handleRecent = () => {
+        setBestMatched(false);
+        setRecent(true);
+        setSaved(false);
+    }
+
+    const handleSaved = () => {
+        setBestMatched(false);
+        setRecent(false);
+        setSaved(true);
+    }
+
+    const handleClick = (id) => {
+        navigate(`/job/${id}`)
+    }
+
+    const handleSave = async (id) => {
+        try {
+            const res = await fetch(`http://localhost:3000/freelancer/jobs/save/${id}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    freelancerId: user.freelancerId
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                if(data.isSaved){
+                    alert(`Job Saved Successfully ${data.savedjobs}`)
+                }else{
+                    alert(`Job Unsaved Successfully ${data.savedjobs}`)
+                }
+                setSavedJobs(data.savedjobs);
+                setJobs(prevJobs =>
+                    prevJobs.map(job =>
+                        job._id === id ? { ...job, isSaved: data.isSaved } : job
+                    )
+                );
+            } else {
+                setError(data.error || "Something went wrong");
+            }
+        } catch (err) {
+            setError("Error in saving job");
+        }
+    }
+
+
+
     useEffect(() => {
-        fetch(`http://localhost:3000/freelancer/client/jobs`)
+        fetch(`http://localhost:3000/freelancer/client/jobs/${user.freelancerId}`)
             .then(res => res.json())
             .then(data => {
                 if (Array.isArray(data.jobs)) {
                     setJobs(data.jobs);
+                    setSavedJobs(data.savedJobs);
                 } else {
                     setJobs([]);
                 }
@@ -18,7 +86,8 @@ const FreelancerHome = () => {
                 setJobs([]);
             });
     }, []);
-    console.log(jobs)
+
+    console.log(savedJobs)
     return (
         <div className="min-h-screen bg-gray-100 p-6">
 
@@ -50,15 +119,19 @@ const FreelancerHome = () => {
                     </div>
                     <h3 className="text-lg font-semibold m-4">Jobs you might like</h3>
                     <div className="flex mb-4">
-                        <button className="border-b-2 border-red-500 px-4 py-2 font-semibold">
+                        <button className={`${bestMatched ? "border-b-2 border-red-500 px-4 py-2 font-semibold" : "px-4 py-2 text-gray-500"}`} onClick={() => { handleBest() }}>
                             Best match
                         </button>
-                        <button className="px-4 py-2 text-gray-500">Recent</button>
-                        <button className="px-4 py-2 text-gray-500">Saved</button>
+                        <button className={`${recent ? "border-b-2 border-red-500 px-4 py-2 font-semibold" : "px-4 py-2 text-gray-500"}`} onClick={() => { handleRecent() }}>
+                            Recent
+                        </button>
+                        <button className={`${saved ? "border-b-2 border-red-500 px-4 py-2 font-semibold" : "px-4 py-2 text-gray-500"}`} onClick={() => { handleSaved() }}>
+                            Saved
+                        </button>
                     </div>
 
                     {/* Example Job Card */}
-                    {jobs.map((job, index) => (
+                    {bestMatched && jobs.map((job, index) => (
                         <div key={index} className="bg-white p-6 rounded-lg shadow mb-4">
                             <h4 className="font-semibold text-lg">{job.title || "Untitled Job"}</h4>
 
@@ -83,12 +156,15 @@ const FreelancerHome = () => {
                             </div>
 
                             {/* Optional metadata */}
-                            <div className="flex items-center mt-3 text-sm text-gray-500">
+                            <div className="flex gap-2 items-center mt-3 text-sm text-gray-500">
                                 <span className="text-red-500 mr-2">★ 4/5 (12 Reviews)</span>
-                                <span>📍 Location not provided</span>
+                                <button className=" px-4 p-1 border border-red-500 text-red-500 rounded" onClick={() => { handleClick(job._id) }}>View</button>
+                                <button className={`${(job.isSaved) ? 'px-4 p-1 border border-red-500 text-red-500 rounded' : 'border rounded'}`} onClick={() => { handleSave(job._id) }} ><FaSave /></button>
                             </div>
                         </div>
                     ))}
+
+                    {saved && <SavedJobs savedJobs={savedJobs} />}
 
 
                     {/* Add more job cards here... */}

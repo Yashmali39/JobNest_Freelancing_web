@@ -2,8 +2,11 @@ const express = require('express');
 const app = express();
 const freelancerModel = require('../models/freelancer-model');
 const userModel = require('../models/user-model');
+const proposalModel = require('../models/proposal-model');
 const jobModel = require('../models/job-model');
+const { status } = require('express/lib/response');
 const router = express.Router();
+
 
 
 router.get('/:id',async (req, res) => {
@@ -35,18 +38,71 @@ router.get('/freelancers/details', async(req, res)=>{
   }
 })
 
-router.get('/client/jobs', async(req, res)=>{
+router.get('/client/jobs/:id', async(req, res)=>{
   try {
     let jobs = await jobModel.find({});
     if(!jobs){
       res.json({message: "Jobs Not found"})
     }
-    res.json({jobs});
+    let freelancer = await freelancerModel.findOne({_id: req.params.id}).populate('savedJobs');
+    savedJobs = freelancer.savedJobs;
+    res.json({jobs, savedJobs});
+    
   }catch (error) {
     res.json(error.message);
   }
 })
 
+router.post('/proposal', async (req, res)=>{
+  try {
+  let {freelancerId, jobId, message, bidAmount} = req.body;
+    let proposal = await proposalModel.create({
+      bidAmount,
+      message,
+      status: "Submitted",
+      jobId,
+      freelancerId
+    })
+    let job = await jobModel.findOne({_id: jobId});
+    job.proposals.push(proposal._id);
+    await job.save();
+    let freelancer = await freelancerModel.findOne({_id: freelancerId});
+    freelancer.proposalId.push(proposal._id);
+    await freelancer.save();
+    res.json(proposal, freelancer, job)
+  } catch (error) {
+    res.json(error.message)
+    console.log(error.message);
+  }
+})
+
+router.post('/jobs/save/:id', async (req, res)=>{
+  try {
+
+    let freelancer = await freelancerModel.findOne({_id: req.body.freelancerId});
+    let job = await jobModel.findOne({_id: req.params.id});
+    if(freelancer.savedJobs.includes(req.params.id)){
+      freelancer.savedJobs.remove(req.params.id);
+      freelancer = await freelancer.save();
+      job.isSaved = false;
+      await job.save();
+    }else{
+      freelancer.savedJobs.push(req.params.id);
+      freelancer = await freelancer.save();
+      job.isSaved = true;
+      job.save();
+    }
+    
+    let freelancers = await freelancerModel.findOne({_id: req.body.freelancerId}).populate('savedJobs');
+    savedjobs = freelancers.savedJobs;
+    let isSaved = job.isSaved;
+    res.status(201).json({savedjobs, isSaved});
+  } catch (error) {
+    res.json(error.message);
+    console.log(error.message);
+  }
+
+})
 
 
 

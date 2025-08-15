@@ -64,5 +64,22 @@ router.get('/jobs/:id', async (req, res) => {
   }
 });
 
+router.get('/job/:id', async(req, res)=>{
+  try {
+    let job = await jobModel.findOne({_id: req.params.id});
+    let client = await clientModel.findOne({_id: job.clientId});
+    let user = await userModel.findOne({_id: client.userId});
+    
+    res.status(200).json({job, client:{
+      name: user.firstName + ' ' + user.lastName,
+      email: user.email,
+      jobPosted : client.jobId.length
+    }})
+  } catch (error) {
+    res.json(error.message)
+    console.log(error.message)
+  }
+})
+
 
 module.exports = router;
