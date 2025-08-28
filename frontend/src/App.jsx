@@ -131,7 +131,7 @@ function App() {
         </div>
     },
     {
-      path: "/job/:id",
+      path: "/job/:id/:freelancerId",
       element:
       <div>
         <Navbar/>

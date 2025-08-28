@@ -5,6 +5,7 @@ const userModel = require('../models/user-model');
 const proposalModel = require('../models/proposal-model');
 const jobModel = require('../models/job-model');
 const { status } = require('express/lib/response');
+const { route } = require('./freelancerRouter');
 const router = express.Router();
 
 
@@ -53,26 +54,65 @@ router.get('/client/jobs/:id', async(req, res)=>{
   }
 })
 
+router.get('/job/:jobId/:freelancerId', async(req, res)=>{
+  try {
+    let {jobId, freelancerId} = req.params;
+    jobId = jobId.trim();
+
+    freelancerId = freelancerId.trim();
+    
+    
+    let proposal = await proposalModel.findOne({jobId, freelancerId});
+    if(!proposal){
+      res.status(400).json({isCreated: false});
+    }else{
+      res.status(200).json({isCreated: true, proposal});
+    }
+  } catch (error) {
+    res.json(error.message);
+  }
+})
+
 router.post('/proposal', async (req, res)=>{
   try {
   let {freelancerId, jobId, message, bidAmount} = req.body;
-    let proposal = await proposalModel.create({
-      bidAmount,
-      message,
-      status: "Submitted",
-      jobId,
-      freelancerId
-    })
-    let job = await jobModel.findOne({_id: jobId});
-    job.proposals.push(proposal._id);
-    await job.save();
-    let freelancer = await freelancerModel.findOne({_id: freelancerId});
-    freelancer.proposalId.push(proposal._id);
-    await freelancer.save();
-    res.json(proposal, freelancer, job)
+    let proposal = await proposalModel.findOne({jobId, freelancerId})
+     if(proposal){
+      res.status(400).json({message: "Proposal already submitted for this job"});
+     }else{
+
+        proposal = await proposalModel.create({
+        bidAmount,
+        message,
+        status: "Submitted",
+        jobId,
+        freelancerId
+      })
+      let job = await jobModel.findOne({_id: jobId});
+      job.proposals.push(proposal._id);
+      await job.save();
+      let freelancer = await freelancerModel.findOne({_id: freelancerId});
+      freelancer.proposalId.push(proposal._id);
+      await freelancer.save();
+      res.json({proposal, freelancer, job})
+    }
   } catch (error) {
     res.json(error.message)
     console.log(error.message);
+  }
+})
+
+router.delete('/proposal/:id', async(req, res)=>{
+  try {
+    let deleteProposal = await proposalModel.findOneAndDelete({_id : req.params.id});
+    if (!deleteProposal) {
+      return res.status(404).json({ message: "Proposal not found" });
+    }
+
+    res.status(200).json({ message: "Proposal deleted successfully", deleteProposal });
+    
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 })
 

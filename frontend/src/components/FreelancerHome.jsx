@@ -32,8 +32,9 @@ const FreelancerHome = () => {
         setSaved(true);
     }
 
-    const handleClick = (id) => {
-        navigate(`/job/${id}`)
+    console.log(`${user.freelancerId} + ${user}`);
+    const handleClick = (id, freelancerId) => {
+        navigate(`/job/${id}/${freelancerId}`)
     }
 
     const handleSave = async (id) => {
@@ -158,7 +159,7 @@ const FreelancerHome = () => {
                             {/* Optional metadata */}
                             <div className="flex gap-2 items-center mt-3 text-sm text-gray-500">
                                 <span className="text-red-500 mr-2">★ 4/5 (12 Reviews)</span>
-                                <button className=" px-4 p-1 border border-red-500 text-red-500 rounded" onClick={() => { handleClick(job._id) }}>View</button>
+                                <button className=" px-4 p-1 border border-red-500 text-red-500 rounded" onClick={() => { handleClick(job._id, user.freelancerId) }}>View</button>
                                 <button className={`${(job.isSaved) ? 'px-4 p-1 border border-red-500 text-red-500 rounded' : 'border rounded'}`} onClick={() => { handleSave(job._id) }} ><FaSave /></button>
                             </div>
                         </div>

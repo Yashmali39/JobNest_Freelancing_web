@@ -3,16 +3,48 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import ProposalForm from './ProposalForm';
 import { useAuth } from './AuthContext';
+import ProposalCard from './ProposalCard';
 const JobCard = () => {
-    const {user} = useAuth();
-    const { id } = useParams();
+    const { user } = useAuth();
+    const { id, freelancerId } = useParams();
 
     const [job, setJob] = useState();
     const [client, setClient] = useState();
     const [isCreating, setIsCreating] = useState(false);
+    const [isCreated, setIsCreated] = useState(false);
+    const [proposal, setProposal] = useState();
+
     const handleClick = () => {
         setIsCreating(!isCreating)
     }
+
+    const handleDelete = async (proposal) => {
+        try {
+            const res = await fetch(`http://localhost:3000/freelancer/proposal/${proposal._id}`, {
+                method: "DELETE",
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("Proposal deleted successfully!");
+                setProposal(null);    // clear proposal
+                setIsCreated(false);  // go back to 'Create Proposal' button
+            } else {
+                alert(data.message || "Failed to delete proposal");
+            }
+        } catch (error) {
+            console.error("Error deleting proposal:", error);
+            alert("Something went wrong while deleting the proposal.");
+        }
+
+    }
+
+    const handleUpdate = () => {
+
+    }
+
+
     useEffect(() => {
         fetch(`http://localhost:3000/client/job/${id}`)
             .then(res => res.json())
@@ -25,7 +57,25 @@ const JobCard = () => {
                 setJob([]);
             });
     }, [id])
+
+
+
+    useEffect(() => {
+        fetch(`http://localhost:3000/freelancer/job/${id}/${freelancerId}`)
+            .then(res => res.json())
+            .then(data => {
+                setIsCreated(data.isCreated);
+                setProposal(data.proposal);
+                // alert(isCreated);
+            })
+            .catch(err => {
+                alert.error(err);
+            });
+    }, [id])
+
+
     if (!job && !client) return <><div>loading...</div></>
+
     return (
         <div className="max-w-5xl mx-auto p-6 bg-white rounded-lg shadow-md">
             {/* Back Button */}
@@ -77,10 +127,18 @@ const JobCard = () => {
 
             {/* Buttons. onClick={()=>{handleClick()} */}
             <div className="flex gap-4 mt-6">
-                {!isCreating && <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={() => { handleClick() }}>
+                {!isCreated && !isCreating && <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" onClick={() => { handleClick() }}>
                     Create a proposal
                 </button>}
-                {isCreating && <ProposalForm jobId = {id} freelancerId = {user.freelancerId}/>}
+
+                {isCreated && proposal && <ProposalCard proposal={proposal} onDelete={handleDelete} onUpdate={handleUpdate} />}
+
+                {isCreating && <ProposalForm jobId={id} freelancerId={user.freelancerId} handleProposalCreated={(newProposal) => {
+                    setProposal(newProposal);
+                    setIsCreated(true);
+                    setIsCreating(false);
+                }} />}
+
             </div>
         </div>
     )

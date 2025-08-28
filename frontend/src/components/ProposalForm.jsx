@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 
-export default function ProposalForm({ jobId, freelancerId }) {
+export default function ProposalForm({ jobId, freelancerId, handleProposalCreated }) {
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
@@ -28,6 +28,7 @@ export default function ProposalForm({ jobId, freelancerId }) {
 
       if (res.ok) {
         setSuccess("Proposal submitted successfully!");
+        handleProposalCreated(data.proposal);
         alert(success)
         reset();
       } else {
