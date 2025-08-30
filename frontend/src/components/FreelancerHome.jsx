@@ -174,24 +174,7 @@ const FreelancerHome = () => {
                 {/* Right Section */}
                 <div className="w-full md:w-1/3 flex flex-col gap-6">
                     {/* Profile Card */}
-                    <div className="bg-white p-6 rounded-lg shadow flex flex-col items-center">
-                        <img
-                            src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                            alt="User"
-                            className="w-16 h-16 rounded-full mb-4"
-                        />
-                        <h4 className="font-semibold">{user?.first_name} {user?.last_name}</h4>
-                        <p className="text-gray-500 mb-2">User Experience Designer</p>
-                        <div className="w-full">
-                            <p className="text-sm mb-1">Set up your account</p>
-                            <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                                <div className="bg-blue-600 h-2 rounded-full" style={{ width: '82%' }}></div>
-                            </div>
-                            <button className="text-sm border border-red-500 text-red-500 px-4 py-2 rounded">
-                                Complete your profile
-                            </button>
-                        </div>
-                    </div>
+                    
 
 
 

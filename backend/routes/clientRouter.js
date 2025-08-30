@@ -66,7 +66,7 @@ router.get('/jobs/:id', async (req, res) => {
 
 router.get('/job/:id', async(req, res)=>{
   try {
-    let job = await jobModel.findOne({_id: req.params.id});
+    let job = await jobModel.findOne({_id: req.params.id}).populate('proposals');
     let client = await clientModel.findOne({_id: job.clientId});
     let user = await userModel.findOne({_id: client.userId});
     
@@ -80,6 +80,27 @@ router.get('/job/:id', async(req, res)=>{
     console.log(error.message)
   }
 })
+
+router.get('/current/job/:id', async(req, res)=>{
+  try {
+    let client = await clientModel.findOne({_id: req.params.id}).populate("jobId");
+    if(!client){
+      return res.status(400).json({message: "Client Not Found"})
+    }
+
+    const currentJob = client.jobId[0]; // latest job
+    if (!currentJob) {
+      return res.status(404).json({ message: "No jobs posted yet" , response: true});
+    }
+
+    res.json({ job: currentJob , response: true});
+
+
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+})
+
 
 
 module.exports = router;

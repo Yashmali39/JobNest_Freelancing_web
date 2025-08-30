@@ -16,6 +16,7 @@ import ClientProfile from './components/ClientProfile'
 import CreateJob from './components/CreateJob'
 import { div } from 'framer-motion/client'
 import JobCard from './components/JobCard'
+import ClientJobCard from './components/ClientJobCard'
 function App() {
   const [user, setUser] = useState(null)
 
@@ -136,6 +137,14 @@ function App() {
       <div>
         <Navbar/>
         <JobCard/>
+      </div>
+    },
+    {
+      path: "client/job/:id",
+      element:
+      <div>
+        <Navbar/>
+        <ClientJobCard/>
       </div>
     }
   ])

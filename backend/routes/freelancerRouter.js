@@ -102,20 +102,6 @@ router.post('/proposal', async (req, res)=>{
   }
 })
 
-router.delete('/proposal/:id', async(req, res)=>{
-  try {
-    let deleteProposal = await proposalModel.findOneAndDelete({_id : req.params.id});
-    if (!deleteProposal) {
-      return res.status(404).json({ message: "Proposal not found" });
-    }
-
-    res.status(200).json({ message: "Proposal deleted successfully", deleteProposal });
-    
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-})
-
 router.post('/jobs/save/:id', async (req, res)=>{
   try {
 
@@ -143,6 +129,22 @@ router.post('/jobs/save/:id', async (req, res)=>{
   }
 
 })
+
+router.delete('/proposal/:id', async(req, res)=>{
+  try {
+    let deleteProposal = await proposalModel.findOneAndDelete({_id : req.params.id});
+    if (!deleteProposal) {
+      return res.status(404).json({ message: "Proposal not found" });
+    }
+
+    res.status(200).json({ message: "Proposal deleted successfully", deleteProposal });
+    
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+})
+
+
 
 
 

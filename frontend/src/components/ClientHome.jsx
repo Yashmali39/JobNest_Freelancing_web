@@ -1,118 +1,238 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from './AuthContext';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "./AuthContext";
+import { useNavigate } from "react-router-dom";
+
 const ClientHome = () => {
     const { user } = useAuth();
-    const[freelancers, setFreelancers] = useState([])
+    const navigate = useNavigate();
+    const [freelancers, setFreelancers] = useState([]);
+    const [job, setJob] = useState();
+    const [response, setResponse] = useState(false);
+
     useEffect(() => {
+
         fetch(`http://localhost:3000/freelancer/freelancers/details`)
-            .then(res => res.json())
-            .then(data => {
+            .then((res) => res.json())
+            .then((data) => {
                 if (Array.isArray(data.freelancers)) {
                     setFreelancers(data.freelancers);
                 } else {
                     setFreelancers([]);
                 }
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error(err);
                 setFreelancers([]);
             });
     }, []);
-    console.log(freelancers)
+
+
+    useEffect(() => {
+        fetch(`http://localhost:3000/client/current/job/${user.clientId}`)
+            .then((res) => res.json())
+            .then((data) => {
+                setJob(data.job);
+                setResponse(data.response);
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    }, []);
+
+    if (!freelancers && response) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                Loading...
+            </div>
+        );
+    }
+
     return (
-        <div className="bg-gray-100 min-h-screen px-6 py-8">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-semibold">
-                    Welcome back, <span className="text-blue-600">{user?.name || 'Client'}</span>
-                </h1>
+        <div className="relative min-h-screen bg-gradient-to-b from-[#0f052c] via-[#1a0f45] to-[#2d1b69]">
+            {/* Subtle starry texture overlay */}
+            <div
+                className="absolute inset-0 bg-cover bg-center opacity-20"
+                style={{
+                    backgroundImage:
+                        "url('https://www.transparenttextures.com/patterns/stardust.png')",
+                }}
+            ></div>
 
+            {/* Abstract glowing blobs */}
+            <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute top-20 left-10 w-40 h-40 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+                <div className="absolute bottom-20 right-10 w-60 h-60 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
             </div>
 
-            {/* No Job Post Card */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8 flex justify-between items-center flex-col sm:flex-row">
-                <div>
-                    <h2 className="text-lg font-semibold">No job post</h2>
-                    <p className="text-sm text-gray-600 mt-1">
-                        You have not posted any job, post your job and find world's best talent here.
-                    </p>
-                    <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                        Post now
-                    </button>
-                </div>
-                <img
-                    src="https://img.freepik.com/free-vector/flat-employment-agency-search-new-employees-hire_88138-802.jpg?semt=ais_hybrid&w=740"
-                    alt="No job"
-                    className="w-36 h-36 object-contain mt-6 sm:mt-0"
-                />
-            </div>
+            {/* Page Content */}
+            <div className="relative z-10 py-10 px-4 flex justify-center">
+                <div className="w-full max-w-6xl">
+                    {/* Header */}
+                    <h1 className="text-3xl font-bold mb-6 text-center text-white">
+                        Welcome back,{" "}
+                        <span className="text-yellow-400">{user?.name || "Client"}</span>
+                    </h1>
 
-            {/* Search Bar */}
-            <div className="flex items-center gap-4 mb-6">
-                <input
-                    type="text"
-                    placeholder="Search talent here"
-                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                    Search
-                </button>
-            </div>
+                    {/* No Job Post Card */}
+                    {/* No Job / Current Job Card */}
+                    <div className="mb-10">
+                        {job ? (
+                            // Job Card
+                            <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col sm:flex-row items-center gap-6 hover:shadow-xl transition">
+                                <div className="flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <h2 className="text-xl font-semibold text-gray-800 mb-2">{job.title}</h2>
+                                        <p className="text-gray-700 mb-2">
+                                            {job.discription.length > 50
+                                                ? job.discription.substring(0, 50) + "..."
+                                                : job.discription}
+                                        </p>
+                                        <p className="text-gray-700 mb-1">
+                                            <strong>Budget:</strong> {job.budget}
+                                        </p>
+                                        <p className="text-gray-700 mb-1">
+                                            <strong>Timeline:</strong> {job.timeline}
+                                        </p>
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {(job.skills || []).slice(0, 3).map((skill, idx) => (
+                                                <span key={idx} className="bg-gray-200 px-2 py-1 text-xs rounded">
+                                                    {skill}
+                                                </span>
+                                            ))}
+                                            {job.skills && job.skills.length > 3 && (
+                                                <span className="text-blue-600 text-xs cursor-pointer">
+                                                    +{job.skills.length - 3} more
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
 
-            {/* Best Matches */}
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Best matches for you (200)</h2>
-                <button className="text-blue-600 hover:underline text-sm">Filter here</button>
-            </div>
-
-            {/* Talent Cards */}
-            <div className="space-y-4">
-                {freelancers?.map((freelancer, i) => (
-                    <div
-                        key={i}
-                        className="bg-white p-4 rounded-lg shadow flex flex-col sm:flex-row justify-between items-start sm:items-center"
-                    >
-                        <div>
-                            <p className="font-semibold text-lg">{freelancer.profession || "Freelancer"}</p>
-                            <p className="text-sm text-gray-500">
-                                {freelancer.experience ? `${freelancer.experience} experience` : "Experience not provided"}
-                            </p>
-                            <p className="mt-1 text-gray-800 font-medium">
-                                {freelancer.phoneNumber ? `Contact: ${freelancer.phoneNumber}` : "Contact not available"}
-                            </p>
-                            <p className="text-xs text-gray-600">
-                                {freelancer.education ? `Education: ${freelancer.education}` : "No education info"}
-                            </p>
-
-                            <div className="flex flex-wrap gap-2 mt-2">
-                                {(freelancer.skills || []).slice(0, 3).map((skill, index) => (
-                                    <span key={index} className="bg-gray-200 px-2 py-1 text-xs rounded">
-                                        {skill}
-                                    </span>
-                                ))}
-                                {freelancer.skills && freelancer.skills.length > 3 && (
-                                    <span className="text-blue-600 text-sm cursor-pointer">more</span>
-                                )}
+                                    <button
+                                        onClick={() => navigate(`/client/job/${job._id}`)}
+                                        className="mt-4 w-max bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-5 py-2 rounded-full text-sm font-medium hover:from-indigo-500 hover:to-blue-500 transition"
+                                    >
+                                        View
+                                    </button>
+                                </div>
+                                <img
+                                    src="https://img.freepik.com/free-vector/flat-employment-agency-search-new-employees-hire_88138-802.jpg?semt=ais_hybrid&w=740"
+                                    alt="Job"
+                                    className="w-48 h-48 object-contain"
+                                />
                             </div>
-
-                            <div className="mt-2 text-sm text-gray-500">
-                                📍 {freelancer.city || "City"}, {freelancer.country || "Country"}
+                        ) : (
+                            // No Job Posted Card
+                            <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col sm:flex-row items-center gap-6 hover:shadow-xl transition">
+                                <div className="flex-1">
+                                    <h2 className="text-lg font-semibold text-gray-800">No job posted yet</h2>
+                                    <p className="text-gray-600 mt-2">
+                                        Post your job and find the world's best talent here.
+                                    </p>
+                                    <button className="mt-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-5 py-2 rounded-full hover:from-indigo-500 hover:to-blue-500 transition">
+                                        Post Job
+                                    </button>
+                                </div>
+                                <img
+                                    src="https://img.freepik.com/free-vector/flat-employment-agency-search-new-employees-hire_88138-802.jpg?semt=ais_hybrid&w=740"
+                                    alt="No job"
+                                    className="w-48 h-48 object-contain"
+                                />
                             </div>
-                        </div>
+                        )}
+                    </div>
 
-                        <button className="mt-4 sm:mt-0 bg-transparent border border-red-500 text-red-500 px-4 py-1 rounded hover:bg-red-50 transition">
-                            Invite
+
+
+                    {/* Search Bar */}
+                    <div className="flex items-center gap-3 mb-8 justify-center">
+                        <input
+                            type="text"
+                            placeholder="Search talent here"
+                            className="w-full sm:w-3/4 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                        />
+                        <button className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500 transition">
+                            Search
                         </button>
                     </div>
-                ))}
 
-            </div>
+                    {/* Freelancers Grid */}
+                    <h2 className="text-2xl font-semibold mb-6 text-center text-white">
+                        Best Matches for You ({freelancers.length})
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {freelancers.map((freelancer, i) => (
+                            <div
+                                key={i}
+                                className="bg-white p-5 rounded-lg shadow-md flex flex-col justify-between hover:shadow-xl transition"
+                            >
+                                <div>
+                                    <div className="flex items-center gap-4 mb-3">
+                                        <img
+                                            src={
+                                                freelancer.profilePic ||
+                                                "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                                            }
+                                            alt={freelancer.name || "Freelancer"}
+                                            className="w-12 h-12 rounded-full"
+                                        />
+                                        <div>
+                                            <h3 className="font-semibold">
+                                                {freelancer.name || "Freelancer"}
+                                            </h3>
+                                            <p className="text-gray-500 text-sm">
+                                                {freelancer.profession || "Profession not provided"}
+                                            </p>
+                                        </div>
+                                    </div>
 
-            {/* Load More */}
-            <div className="text-center mt-6">
-                <button className="px-4 py-2 border border-gray-400 rounded hover:bg-gray-100 transition">
-                    Load more
-                </button>
+                                    <p className="text-gray-700 mb-1">
+                                        <strong>Experience:</strong>{" "}
+                                        {freelancer.experience
+                                            ? `${freelancer.experience} years`
+                                            : "Not provided"}
+                                    </p>
+                                    <p className="text-gray-700 mb-1">
+                                        <strong>Education:</strong>{" "}
+                                        {freelancer.education || "Not provided"}
+                                    </p>
+                                    <p className="text-gray-700 mb-2">
+                                        <strong>Location:</strong> {freelancer.city || "City"},{" "}
+                                        {freelancer.country || "Country"}
+                                    </p>
+
+                                    <div className="flex flex-wrap gap-2 mb-3">
+                                        {(freelancer.skills || []).slice(0, 3).map((skill, idx) => (
+                                            <span
+                                                key={idx}
+                                                className="bg-gray-200 px-2 py-1 text-xs rounded"
+                                            >
+                                                {skill}
+                                            </span>
+                                        ))}
+                                        {freelancer.skills && freelancer.skills.length > 3 && (
+                                            <span className="text-blue-600 text-xs cursor-pointer">
+                                                +{freelancer.skills.length - 3} more
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => navigate(`/freelancerprofile/${freelancer._id}`)}
+                                    className="mt-auto bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                                    View Profile
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Load More */}
+                    <div className="text-center mt-8">
+                        <button className="px-6 py-2 border border-gray-400 rounded hover:bg-gray-100 transition">
+                            Load More
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
