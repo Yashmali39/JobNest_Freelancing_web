@@ -1,12 +1,43 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
-import './App.css';
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <div className='flex justify-center flex-col align-middle'>
+import React from "react";
+import ReactDOM from "react-dom/client";
+
+import App from "./App";
+
+import {
+  Toaster,
+} from "react-hot-toast";
+
+import {
+  RoleProvider,
+} from "./context/RoleContext";
+
+import "./index.css";
+
+import {
+  AuthProvider,
+} from "./context/AuthContext";
+
+ReactDOM.createRoot(
+  document.getElementById(
+    "root"
+  )
+).render(
+  <AuthProvider>
+    <RoleProvider>
       <App />
-    </div>
-  </StrictMode>,
-)
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background:
+              "#111111",
+            color:
+              "#ffffff",
+            border:
+              "1px solid #262626",
+          },
+        }}
+      />
+    </RoleProvider>
+  </AuthProvider>
+);
